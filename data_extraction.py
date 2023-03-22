@@ -20,7 +20,7 @@ class DataExtractor:
 
 data_extractor = DataExtractor() # calls the DataExtractor class
 user_df = data_extractor.read_rds_table('legacy_users')
-print(user_df.head())
-# user_df.to_csv('.legacy_users.csv') # produce the .csv file 
+# print(user_df.head())
+user_df.to_csv('legacy_users.csv') # produce the .csv file 
 
     

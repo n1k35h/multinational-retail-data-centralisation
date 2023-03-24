@@ -16,13 +16,10 @@ class DataCleaning:
         df = pd.DataFrame(users_table)
         # removes the NULL values with blank cells
         df.isnull().values.any()
-        # if so, the NULL values replace with a 0 in the cell
-        users_table.fillna(value=0, inplace=True)
 
         # Checks and remove invalid dates
-        date_format = '%d/%m/%Y'
-        users_table['date_of_birth'] = pd.to_datetime(users_table['date_of_birth'], format=date_format, errors = 'coerce')
-        users_table['join_date'] = pd.to_datetime(users_table['join_date'], format=date_format, errors = 'coerce')
+        df['date_of_birth'] = pd.to_datetime(df['date_of_birth'], infer_datetime_format=True, errors = 'coerce')
+        df['join_date'] = pd.to_datetime(df['join_date'], infer_datetime_format=True, errors = 'coerce')
     
         # uploads to the csv file
         users_table.to_csv('legacy_users.csv')

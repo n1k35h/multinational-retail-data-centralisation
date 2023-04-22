@@ -17,10 +17,58 @@ class DataExtractor:
         user_data = pd.read_sql_table(table_name, engine)
         return user_data
     
+    def retrieve_pdf_data(self, pdf_data):
+        t.convert_into(pdf_data, "card_details.csv", output_format= "csv", pages= "all")
+        df = pd.read_csv("card_details.csv")
+        return df
 
-data_extractor = DataExtractor() # calls the DataExtractor class
-user_df = data_extractor.read_rds_table('legacy_users')
+    def list_number_of_stores(self, get_store_nums = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'):
+
+        store = r.get(get_store_nums, headers=api_dict)
+        store.status_code
+        number_of_stores = store.json()
+        
+        # print(number_of_stores)
+        return number_of_stores
+
+    def retrieve_stores_data(self, store_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details'):
+
+        api_dict_list = []
+        # store_nums = self.list_number_of_stores()
+
+        for n in range(451):
+            # if n%25 == 0:
+            #     print(n, "/", store_nums)
+            response = r.get(f'{store_endpoint}/{n}', headers=api_dict)
+            data = response.json()
+            api_dict_list.append(data)
+        
+        response = pd.DataFrame.from_dict(api_dict_list)
+        # response.to_csv('store_details.csv')
+        
+        # print(response)
+        return response
+    
+    def extract_from_s3(self):
+        
+        df = pd.read_csv('s3://data-handling-public/products.csv')
+        df.to_csv('products.csv')
+        return df    
+
+extractor = DataExtractor() # calls the DataExtractor class
+user_df = extractor.read_rds_table('legacy_users')
 # print(user_df.head())
 user_df.to_csv('legacy_users.csv') # produce the .csv file 
 
+# link = "https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf"
+# df = de.retrieve_pdf_data(link)
+# print(df.head())
+
+# # de.retrieve_stores_data()
+# retrieve = de.retrieve_stores_data()
+# print(retrieve.head())
+# retrieve.to_csv('store_details.csv')
+
+product_df = de.extract_from_s3()
+print(product_df.head())
     

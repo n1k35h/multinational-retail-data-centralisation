@@ -1,5 +1,7 @@
 from database_utils import DatabaseConnector
 import pandas as pd
+import tabula as t
+import requests as r
 
 # DataExtractor will act as a Utility class, create methods that help extract data from different
 # data sources such as; CSV files, an API and an S3 bucket.
@@ -12,34 +14,36 @@ class DataExtractor:
     # taking an instance of the DatabaseConnector class and the table name as an argument and return pandas DataFrame
     # list_db_tables method take name of the table containing user data
     # read_rds_table method extract the table containing user data and return a pandas DataFrame
-        database_connector = DatabaseConnector() 
-        engine = database_connector.init_db_engine()
-        user_data = pd.read_sql_table(table_name, engine)
-        return user_data
+        conn = DatabaseConnector() 
+        engine = conn.init_db_engine()
+        users_data = pd.read_sql_table(table_name, engine)
+        return users_data
     
     def retrieve_pdf_data(self, pdf_data):
         t.convert_into(pdf_data, "card_details.csv", output_format= "csv", pages= "all")
-        df = pd.read_csv("card_details.csv")
-        return df
+        card_df = pd.read_csv("card_details.csv")
+        return card_df
 
-    def list_number_of_stores(self, get_store_nums = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'):
-
-        store = r.get(get_store_nums, headers=api_dict)
+    def list_number_of_stores(self, get_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'):
+        api_dict= {'x-api-key' : 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+        
+        store = r.get(get_endpoint, headers=api_dict)
         store.status_code
         number_of_stores = store.json()
         
         # print(number_of_stores)
         return number_of_stores
 
-    def retrieve_stores_data(self, store_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details'):
+    def retrieve_stores_data(self, retrieve_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details'):
 
         api_dict_list = []
         # store_nums = self.list_number_of_stores()
-
+        api_dict= {'x-api-key' : 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+        
         for n in range(451):
             # if n%25 == 0:
             #     print(n, "/", store_nums)
-            response = r.get(f'{store_endpoint}/{n}', headers=api_dict)
+            response = r.get(f'{retrieve_endpoint}/{n}', headers=api_dict)
             data = response.json()
             api_dict_list.append(data)
         
@@ -51,24 +55,14 @@ class DataExtractor:
     
     def extract_from_s3(self):
         
-        df = pd.read_csv('s3://data-handling-public/products.csv')
-        df.to_csv('products.csv')
-        return df    
-
-extractor = DataExtractor() # calls the DataExtractor class
-user_df = extractor.read_rds_table('legacy_users')
-# print(user_df.head())
-user_df.to_csv('legacy_users.csv') # produce the .csv file 
-
-# link = "https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf"
-# df = de.retrieve_pdf_data(link)
-# print(df.head())
-
-# # de.retrieve_stores_data()
-# retrieve = de.retrieve_stores_data()
-# print(retrieve.head())
-# retrieve.to_csv('store_details.csv')
-
-product_df = de.extract_from_s3()
-print(product_df.head())
+        product_df = pd.read_csv('s3://data-handling-public/products.csv')
+        product_df.to_csv('products.csv')
+        return product_df
     
+    def extract_from_s3_json(self):
+
+        date_df = pd.read_json('https://data-handling-public.s3.eu-west-1.amazonaws.com/date_details.json')
+        date_df.to_csv('date_details.csv')
+        return date_df
+
+de = DataExtractor() # calls the DataExtractor class

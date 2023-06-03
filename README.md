@@ -14,3 +14,12 @@ Scenario for this Project is to work for Multinational Retail company that sells
     * DataCleaning - cleaning data from each of the data sources
 
 * Creating and reading the .yaml file within the read_db_file method
+       def read_db_creds(self):
+        with open('db_creds.yaml', 'r') as f:
+            creds_data = yaml.safe_load(f)
+        return creds_data
+
+
+
+
+ 

@@ -38,18 +38,18 @@ Scenario for this Project is to work for Multinational Retail company that sells
 
 * Creating the upload_to_db method to connect and upload the cleaned data to the table in the Sales_Data database 
 
-    def upload_to_db(self, df, table_name,):
-        DATABASE_TYPE = 'postgresql'
-        DBAPI = 'psycopg2'
-        HOST = 'localhost'
-        USER = 'postgres'
-        PASSWORD = #password
-        PORT = 5432
-        DATABASE = 'Sales_Data'
+	    def upload_to_db(self, df, table_name,):
+		DATABASE_TYPE = 'postgresql'
+		DBAPI = 'psycopg2'
+		HOST = 'localhost'
+		USER = 'postgres'
+		PASSWORD = #password
+		PORT = 5432
+		DATABASE = 'Sales_Data'
 
-        localengine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
-        localengine.connect()
-        df.to_sql(name=table_name, con=localengine, if_exists='replace')
+		localengine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
+		localengine.connect()
+		df.to_sql(name=table_name, con=localengine, if_exists='replace')
 
 
 * list of tables that the cleaned data will be uploaded too after the data is extracted from various data sources
@@ -243,5 +243,86 @@ Scenario for this Project is to work for Multinational Retail company that sells
 
 			  return date_df
 
+# Milestone 3: Database Scheme
+Developing the star-based schema of the database to ensure that the data type for the required columns of each table is correctly assigned. For example: 
 
+            ALTER TABLE orders_table
+                ALTER COLUMN date_uuid TYPE UUID USING CAST(date_uuid as UUID),
+                ALTER COLUMN user_uuid TYPE UUID USING CAST(user_uuid as UUID),
+                ALTER COLUMN card_number TYPE VARCHAR(20),
+                ALTER COLUMN store_code TYPE VARCHAR(12),
+                ALTER COLUMN product_code TYPE VARCHAR(11),
+                ALTER COLUMN product_quantity TYPE SMALLINT
+                ;
+                
+            SELECT * FROM orders_table;
+
+
+New column weight_class is added to the dim_products table to improve human-readability to allow quick decision-making on delivery weights.
+
+            SELECT *,
+                (CASE
+                    WHEN weight < 2.0 THEN 'Light'
+                    WHEN weight >= 2.0 AND weight < 40.0 THEN 'Mid_Sized'
+                    WHEN weight >= 40.0 AND weight < 140.0 THEN 'Heavy'
+                    WHEN weight >= 140.0 THEN 'Truck_Required'
+                END) AS weight_class
+                FROM dim_products
+                ORDER BY index asc;
+
+Completing the final stages of the star-based database schema - Primary Keys is added to the relevant columns to each of the 5 tables
+
+            /* created the primary key for each of the dim tables */
+
+            ALTER TABLE dim_users
+                ADD PRIMARY KEY (user_uuid);
+
+            ALTER TABLE dim_store_details
+                ADD PRIMARY KEY (store_code);
+
+            ALTER TABLE dim_products
+                ADD PRIMARY KEY (product_code);
+
+            ALTER TABLE dim_date_times
+                ADD PRIMARY KEY (date_uuid);
+
+            ALTER TABLE dim_card_details
+                ADD PRIMARY KEY (card_number);
+
+Below code is required to add data that are in orders_table but not in dim_store_details, which are now added to the dim_store_details.
+
+            SELECT orders_table.store_code
+                FROM orders_table
+                LEFT JOIN dim_store_details
+                ON orders_table.store_code = dim_store_details.store_code
+                WHERE dim_store_details.store_code IS NULL;
+
+            INSERT INTO dim_store_details(store_code)
+                SELECT DISTINCT orders_table.store_code
+                FROM orders_table
+                WHERE orders_table.store_code NOT IN 
+                    (SELECT dim_store_details.store_code
+                    FROM dim_store_details);
+
+Foreign Keys are added to the orders_table to get the relations between the orders_table to the other 5 dim tables.
+
+            ALTER TABLE orders_table
+                ADD FOREIGN KEY (user_uuid)
+                REFERENCES dim_users(user_uuid);
+
+            ALTER TABLE orders_table
+                ADD FOREIGN KEY (store_code)
+                REFERENCES dim_store_details;
+
+            ALTER TABLE orders_table
+                ADD FOREIGN KEY (product_code)
+                REFERENCES dim_products;
+
+            ALTER TABLE orders_table
+                ADD FOREIGN KEY (date_uuid)
+                REFERENCES dim_date_times;
+                
+            ALTER TABLE orders_table
+                ADD FOREIGN KEY (card_number)
+                REFERENCES dim_card_details;
 

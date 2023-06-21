@@ -6,7 +6,7 @@ WITH german_store_sales AS (
 	INNER JOIN dim_products AS dp ON dp.product_code = ot.product_code
 	INNER JOIN dim_store_details AS dsd ON dsd.store_code = ot.store_code)
 		SELECT 
-			SUM(product_price * product_quantity) AS total_sales,
+			ROUND(CAST(SUM(product_price * product_quantity)AS NUMERIC), 2) AS total_sales,
 			store_type,
 			country_code
 		FROM german_store_sales

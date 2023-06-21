@@ -6,7 +6,7 @@ WITH highest_month_sales_per_year AS(
 	INNER JOIN dim_products AS dp ON dp.product_code = ot.product_code
 	INNER JOIN dim_date_times AS ddt ON ddt.date_uuid = ot.date_uuid)
 		SELECT 
-			SUM(product_price * product_quantity) AS total_sales,
+			ROUND(CAST(SUM(product_price * product_quantity)AS NUMERIC), 2) AS total_sales,
 			year,
 			month
 		FROM highest_month_sales_per_year

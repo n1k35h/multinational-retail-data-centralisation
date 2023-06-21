@@ -6,9 +6,9 @@ WITH sales_order AS (
 	INNER JOIN orders_table AS ot ON ot.store_code = dsd.store_code
 	INNER JOIN dim_products AS dp ON dp.product_code = ot.product_code)
 		SELECT store_type,
-			SUM(product_price * product_quantity) AS total_sales,
-			SUM(product_price * product_quantity) * 100.00 / 
-			(SELECT SUM(product_price * product_quantity) FROM sales_order) AS percentage_total
+			ROUND(CAST(SUM(product_price * product_quantity)AS NUMERIC), 2) AS total_sales,
+			ROUND(CAST(SUM(product_price * product_quantity) * 100.00 / 
+			(SELECT SUM(product_price * product_quantity) FROM sales_order)AS NUMERIC), 2) AS percentage_total
 		FROM sales_order
 		GROUP BY store_type
 		ORDER BY percentage_total DESC limit 5;

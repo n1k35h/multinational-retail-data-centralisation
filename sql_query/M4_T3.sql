@@ -8,9 +8,9 @@ WITH highest_avg_monthly_sales AS(
 	INNER JOIN 
 		dim_products AS dp ON dp.product_code = ot.product_code)
 		SELECT
+			ROUND(CAST(SUM(product_quantity*product_price)AS NUMERIC), 2) AS total_sales,
 			month,
-			SUM(product_quantity*product_price) AS total_sales,
-			AVG(product_quantity*product_price) AS avg_per_month
+			ROUND(CAST(AVG(product_quantity*product_price)AS NUMERIC), 2) AS avg_per_month
 		FROM highest_avg_monthly_sales
 		GROUP BY month
 		ORDER BY total_sales DESC;

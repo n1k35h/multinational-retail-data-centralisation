@@ -2,10 +2,21 @@
 
 Scenario for this Project is to work for Multinational Retail company that sells various goods across the globe. Currently, their sales data is spread across many different data sources making it not easily accessible or analysable by current members of the team. In an effort to become more data-driven, the organisation will make the sales data accessible from one centralised location. The first goal is to produce a system that stores the current company data in a database so that it's accessed from one centralised location and act as a single source of truth for sales data. The system will then query the database to get the up-to-date metrics for the business.
 
-# Milestone 1:
-* Setting up the develope environment to get started
+The tools and languages that this project will be using are as follows:
+* Tools
+  * AWS - Amazon Web Services (Cloud technology)
+  	* Extract data source files (e.g: API, S3 Bucket, JSON)
+  * VSC - Visual Studio Code
+  	* writing the python code
+  * pgAdmin 4 - PostgreSQL 
+  	* connect to the SQL database for the use of table creation and queries
 
-# Milestone 2: Extracted and Cleaned the data from the data source
+* Languages
+  * Python
+  * SQL
+ 
+
+# Database
 * Setted up a Sales_Data database within the PGAdmin4, where it will store all the company information after the data has been extracted from various data sources.
 
 * Initilised 3 project classes:
@@ -38,15 +49,6 @@ Scenario for this Project is to work for Multinational Retail company that sells
 
 * Creating the upload_to_db method to connect and upload the cleaned data to the table in the Sales_Data database 
 
-	    def upload_to_db(self, df, table_name,):
-		DATABASE_TYPE = 'postgresql'
-		DBAPI = 'psycopg2'
-		HOST = 'localhost'
-		USER = 'postgres'
-		PASSWORD = #password
-		PORT = 5432
-		DATABASE = 'Sales_Data'
-
 		localengine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
 		localengine.connect()
 		df.to_sql(name=table_name, con=localengine, if_exists='replace')
@@ -55,20 +57,52 @@ Scenario for this Project is to work for Multinational Retail company that sells
 * list of tables that the cleaned data will be uploaded too after the data is extracted from various data sources
 
     * dim_users
-    * dim_card_details
-    * dim_store_details
+ 	calengine.connect()   * dim_store_details
     * dim_products
     * orders_table
     * dim_date_times
 
+# Extracted the data from the data source
 * Extracting the users data from a table
 
-		 def read_rds_table(self, table_name):
-			  conn = DatabaseConnector() 
-			  engine = conn.init_db_engine()
+		 def read_rds_table(self, table_nam 	lcalengine.connect()   * dim_store_detailsngine = conn.init_db_engine()
 			  users_data = pd.read_sql_table(table_name, engine)
 			  return users_data
 
+* Extracting data from the PDF doc		 def read_rds_table(self, table_nam 	localengine.connect()   * dim_store_detailsngine = conn.init_db_engine()at= "csv", pages= "all")
+			  card_df = pd.read_csv("card_details.csv")
+			  return card_df
+
+* Extracting data from API 
+
+		 def list_number_of_stores(self, get_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'):
+			  api_dict= {'x-api-key' : 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+			  store = r.get(get_endpoint, headers=api_dict)
+			  store.status_code
+			  number_of_stores = store.json()
+			  return number_of_stores
+
+		 def retrieve_stores_data(self, retrieve_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details'):
+			  api_dict_list = []
+			  api_dict= {'x-api-key' : 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+			  for n in range(451):
+					response = r.get(f'{retrieve_endpoint}/{n}', headers=api_dict)
+					data = response.json()
+					api_dict_list.append(data)
+			  response = pd.DataFrame.from_dict(api_dict_list)
+			  return response
+
+* Extracting .csv data from S3 bucket in AWS source
+
+		 def extract_from_s3(self):
+
+			  product_df = pd.read_csv('s3://data-handling-public/products.csv')
+			  product_df.to_csv('products.csv')
+			  return product_df
+
+
+  
+# Cleaned the Data from the Extracted data source
 * Cleaning the users data
 
 		 def clean_user_data(self, users_df):
@@ -94,13 +128,6 @@ Scenario for this Project is to work for Multinational Retail company that sells
 
 			  return users_df
 
-* Extracting data from the PDF document
-
-		 def retrieve_pdf_data(self, pdf_data):
-			  t.convert_into(pdf_data, "card_details.csv", output_format= "csv", pages= "all")
-			  card_df = pd.read_csv("card_details.csv")
-			  return card_df
-
 * Cleaning PDF data 
 
 		 def clean_card_data(self, card_df):
@@ -120,25 +147,6 @@ Scenario for this Project is to work for Multinational Retail company that sells
 			  card_df['card_number'] = card_df['card_number'].astype('int64')
 
         	  return card_df
-			  
-* Extracting data from API 
-
-		 def list_number_of_stores(self, get_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'):
-			  api_dict= {'x-api-key' : 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
-			  store = r.get(get_endpoint, headers=api_dict)
-			  store.status_code
-			  number_of_stores = store.json()
-			  return number_of_stores
-
-		 def retrieve_stores_data(self, retrieve_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details'):
-			  api_dict_list = []
-			  api_dict= {'x-api-key' : 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
-			  for n in range(451):
-					response = r.get(f'{retrieve_endpoint}/{n}', headers=api_dict)
-					data = response.json()
-					api_dict_list.append(data)
-			  response = pd.DataFrame.from_dict(api_dict_list)
-			  return response
 
 * Cleaning API data
 
@@ -161,16 +169,6 @@ Scenario for this Project is to work for Multinational Retail company that sells
 			  store_df = store_df.reindex(columns = cols)   
 
 			  return store_df
-
-
-
-* Extracting .csv data from S3 bucket in AWS source
-
-		 def extract_from_s3(self):
-
-			  product_df = pd.read_csv('s3://data-handling-public/products.csv')
-			  product_df.to_csv('products.csv')
-			  return product_df
 
 * Cleaning AWS S3 data from a .csv file
 
@@ -220,14 +218,6 @@ Scenario for this Project is to work for Multinational Retail company that sells
 			  product_df.drop(['Unnamed: 0'], axis=1, inplace=True) 
 
 			  return product_df
-
-* Extracting JSON file 
-
-		 def extract_from_s3_json(self):
-
-			  date_df = pd.read_json('https://data-handling-public.s3.eu-west-1.amazonaws.com/date_details.json')
-			  date_df.to_csv('date_details.csv')
-			  return date_df
 
 * Cleaning JSON file
 

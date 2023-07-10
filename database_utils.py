@@ -6,17 +6,24 @@ from sqlalchemy import inspect
 # class DatabaseConnector will use to connect with and upload data to the database
 class DatabaseConnector:
 
-    def read_db_creds(self):
+    def read_db_creds(self, file):
         # read the credentials yaml file and returns a dictionary of the credentials
-        with open('db_creds.yaml', 'r') as f:
+        with open(file, 'r') as f:
             creds_data = yaml.safe_load(f)
         return creds_data
 
     def init_db_engine(self):
         # this method will read the credentials from the return of read_db_creds method and initialise and
         # return an sqlalchemy database engine
-        creds_data = self.read_db_creds() # reads the credentials
-        engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{creds_data['RDS_USER']}:{creds_data['RDS_PASSWORD']}@{creds_data['RDS_HOST']}:{creds_data['RDS_PORT']}/{creds_data['RDS_DATABASE']}")
+        creds_data = self.read_db_creds('db_creds.yaml') # reads the credentials
+        DATABASE_TYPE = 'postgresql'
+        DBAPI = 'psycopg2'
+        HOST = creds_data['RDS_HOST']
+        USER = creds_data['RDS_USER']
+        PASSWORD = creds_data['RDS_PASSWORD']
+        PORT = creds_data['RDS_PORT']
+        DATABASE = creds_data['RDS_DATABASE']        
+        engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")        
         engine.connect()
         return engine
 
@@ -31,14 +38,14 @@ class DatabaseConnector:
         # takes pandas DataFrame and table name to upload to as an argument
         # use the upload_to_db method to store the data in your sales_data database
         # in a table named dim_users
+        creds_data = self.read_db_creds('local_creds.yaml')
         DATABASE_TYPE = 'postgresql'
         DBAPI = 'psycopg2'
-        HOST = 'localhost'
-        USER = 'postgres'
-        PASSWORD = '5c008yd00d00'
-        PORT = 5432
-        DATABASE = 'Sales_Data'
-
+        HOST = creds_data['LOCAL_HOST']
+        USER = creds_data['LOCAL_USER']
+        PASSWORD = creds_data['LOCAL_PASSWORD']
+        PORT = creds_data['LOCAL_PORT']
+        DATABASE = creds_data['LOCAL_DATABASE']
         localengine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}")
         localengine.connect()
         df.to_sql(name=table_name, con=localengine, if_exists='replace')

@@ -6,8 +6,6 @@ import requests as r
 # DataExtractor will act as a Utility class, create methods that help extract data from different
 # data sources such as; CSV files, an API and an S3 bucket.
 class DataExtractor:
-    def __init__(self):
-        pass
 
     def read_rds_table(self, table_name):
     # this method will extract the database table to a pandas DataFrame
@@ -25,44 +23,31 @@ class DataExtractor:
         return card_df
 
     def list_number_of_stores(self, get_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'):
-        api_dict= {'x-api-key' : 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
-        
+        api_dict= {'x-api-key' : 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}        
         store = r.get(get_endpoint, headers=api_dict)
         store.status_code
-        number_of_stores = store.json()
-        
-        # print(number_of_stores)
+        number_of_stores = store.json()        
         return number_of_stores
 
     def retrieve_stores_data(self, retrieve_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details'):
-
         api_dict_list = []
-        # store_nums = self.list_number_of_stores()
         api_dict= {'x-api-key' : 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
-        
         for n in range(451):
-            # if n%25 == 0:
-            #     print(n, "/", store_nums)
             response = r.get(f'{retrieve_endpoint}/{n}', headers=api_dict)
             data = response.json()
             api_dict_list.append(data)
-        
         response = pd.DataFrame.from_dict(api_dict_list)
-        # response.to_csv('store_details.csv')
-        
-        # print(response)
         return response
     
     def extract_from_s3(self):
-        
         product_df = pd.read_csv('s3://data-handling-public/products.csv')
         product_df.to_csv('products.csv')
         return product_df
     
     def extract_from_s3_json(self):
-
         date_df = pd.read_json('https://data-handling-public.s3.eu-west-1.amazonaws.com/date_details.json')
         date_df.to_csv('date_details.csv')
         return date_df
 
-de = DataExtractor() # calls the DataExtractor class
+if __name__ == '__main__':
+    de = DataExtractor() # calls the DataExtractor class

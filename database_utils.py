@@ -3,11 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy import inspect
 # import pandas as pd
 
-
 # class DatabaseConnector will use to connect with and upload data to the database
 class DatabaseConnector:
-    def __init__(self):
-        pass
 
     def read_db_creds(self):
         # read the credentials yaml file and returns a dictionary of the credentials
@@ -15,9 +12,6 @@ class DatabaseConnector:
             creds_data = yaml.safe_load(f)
         return creds_data
 
-        # print(data)
-
-        
     def init_db_engine(self):
         # this method will read the credentials from the return of read_db_creds method and initialise and
         # return an sqlalchemy database engine
@@ -50,4 +44,5 @@ class DatabaseConnector:
         df.to_sql(name=table_name, con=localengine, if_exists='replace')
         print('Table Uploaded')
 
-conn = DatabaseConnector()
+if __name__ == '__main__':
+    conn = DatabaseConnector()

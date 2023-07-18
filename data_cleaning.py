@@ -7,6 +7,9 @@ import numpy as np
 class DataCleaning:
 
     def clean_user_data(self, users_df):
+    """ The method will clean the user data by removing the NULL values, fixing the invalid dates and
+    removing unwanted characters from the table """
+    
         # Drops the NULL from the table
         # users_df = de.read_rds_table('legacy_users')
         users_df.replace('NULL', np.NaN, inplace=True)
@@ -30,7 +33,8 @@ class DataCleaning:
         return users_df
 
     def clean_card_data(self, card_df):
-        # format data
+        """ The method will clean the data, which will remove any erroneous values, NULL values or errors with formatting. """
+        
         # removes the null values
         card_df.replace('NULL', np.NaN, inplace=True)
         card_df.dropna(subset=['card_number'], how='any', axis=0, inplace=True)
@@ -45,6 +49,8 @@ class DataCleaning:
         return card_df
 
     def clean_store_data(self, store_df):
+    """ The method will clean the data that was retrieved from the API """
+        
         # remove the 'N/A' from the first row
         store_df.replace('N/A', np.NaN, inplace=True)
         store_df[['staff_numbers', 'longitude', 'latitude']] = store_df[['staff_numbers', 'longitude', 'latitude']].apply(lambda x: round(pd.to_numeric(x, errors = 'coerce'), 1))
@@ -60,6 +66,10 @@ class DataCleaning:
         return store_df
     
     def convert_product_weight(self, product_df):
+    """ The method will take the products Dataframe as an argument and returns the products Dataframe.
+    In the weight column, it has all different weight units ('g', 'ml' & 'oz'), the aim is to convert them into decimal 
+    values using the float, which will represent the weight in kg. """
+        
         #   removes the non-digits from the weight column - kg, g, oz, ml
         product_df['amount'] = product_df['weight'].str.replace(r'[^0-9.]+', '')
         # creates new column for weight amount
@@ -80,6 +90,9 @@ class DataCleaning:
         return product_df        
 
     def clean_products_data(self, product_df):
+    """ The method will clean any additional errors, like NULL values, fixing the dates, and unwanted characters from
+    the table. """
+        
         # Removes the Null value 
         product_df.replace('NULL', np.NaN, inplace=True)
         # correcting the date values and dropping the blank cells
@@ -94,12 +107,15 @@ class DataCleaning:
         return product_df
     
     def clean_orders_data(self, order_df):
+        """ The method will remove the unwanted columns ('first_name', 'last_name' & '1') """
+        
         # removing unwanted columns from orders_table
         order_df.drop(['level_0', 'index', 'first_name', 'last_name', '1'], axis=1, inplace=True)
         return order_df
 
     def clean_date_details(self, date_df):
-        # cleaning invalid entries         
+        """ The method will clean the invalid date entries """
+        
         date_df['day'] = pd.to_numeric(date_df['day'], errors='coerce')
         date_df.dropna(subset=['day'], how='any', axis=0, inplace=True)
         # reorganise the columns
